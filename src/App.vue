@@ -14,7 +14,10 @@
               <v-expansion-panel>
                 <v-expansion-panel-header><strong>2. Customize</strong></v-expansion-panel-header>
                 <v-expansion-panel-content>
-                  <Form v-bind:initial="initial" />
+                  <Form
+                    v-bind:initial="initial"
+                    v-on:export="handleExport"
+                  />
                   <div class="d-flex">
                     <v-btn color="primary" text><v-icon left>mdi-restore</v-icon> Reset all</v-btn>
                     <v-btn color="primary" text class="ml-auto" style="margin-right: 1em;" v-on:click="panel = 0">Back</v-btn>
@@ -41,11 +44,14 @@
 </template>
 
 <script>
+import { saveAs } from 'file-saver';
+
 import FileDrop from './components/FileDrop';
 import Form from './components/Form';
 
 import readFile from './utils/readFile';
 import parseImage from './utils/parseImage';
+import exportImage from './utils/exportImage'
 
 export default {
   name: 'App',
@@ -57,6 +63,7 @@ export default {
     return {
       panel: 0,
       file: null,
+      blob: null,
       initial: {},
     };
   },
@@ -65,11 +72,18 @@ export default {
       this.file = file;
       if (!file) return;
       try {
-        this.initial = parseImage(await readFile(file));
+        this.blob = await readFile(file);
+        this.initial = parseImage(this.blob);
+        this.values = { ...this.initial };
         this.panel = 1;
       } catch (e) {
         this.file = null;
       }
+    },
+    handleExport(part, name) {
+      const image = exportImage(this.blob, this.initial, part);
+      const blob = new Blob([ image ]);
+      saveAs(blob, name);
     },
   },
 };

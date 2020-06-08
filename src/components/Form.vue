@@ -57,6 +57,8 @@
         <ImageReplacer
           label="Kernel image"
           value="kernel.img"
+          v-bind:allow-export="initial.kernel_size > 0"
+          v-on:export="()=> handleExport('kernel', 'kernel.img')"
         />
       </v-col>
     </v-row>
@@ -79,6 +81,8 @@
         <ImageReplacer
           label="Ramdisk image"
           value="ramdisk.img"
+          v-bind:allow-export="initial.ramdisk_size > 0"
+          v-on:export="()=> handleExport('ramdisk', 'ramdisk.img')"
         />
       </v-col>
     </v-row>
@@ -101,6 +105,8 @@
         <ImageReplacer
           label="2nd-stage BL image"
           value="second.img"
+          v-bind:allow-export="initial.second_size > 0"
+          v-on:export="()=> handleExport('second', 'second.img')"
         />
       </v-col>
     </v-row>
@@ -123,6 +129,8 @@
         <ImageReplacer
           label="DT image"
           value="dt.img"
+          v-bind:allow-export="initial.dt_size > 0"
+          v-on:export="()=> handleExport('dt', 'dt.img')"
         />
       </v-col>
     </v-row>
@@ -144,6 +152,8 @@
         <ImageReplacer
           label="Recovery DTBO image"
           value="recovery_dtbo.img"
+          v-bind:allow-export="initial.recovery_dtbo_size > 0"
+          v-on:export="()=> handleExport('recovery_dtbo', 'recovery_dtbo.img')"
         />
       </v-col>
     </v-row>
@@ -166,6 +176,8 @@
         <ImageReplacer
           label="DTB image"
           value="dtb.img"
+          v-bind:allow-export="initial.dtb_size > 0"
+          v-on:export="()=> handleExport('dtb', 'dtb.img')"
         />
       </v-col>
     </v-row>
@@ -221,6 +233,11 @@ export default {
   },
   props: {
     initial: Object,
+  },
+  methods: {
+    handleExport(part, name) {
+      this.$emit('export', part, name);
+    },
   },
 };
 </script>

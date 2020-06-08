@@ -29,7 +29,14 @@
     <template v-slot:append-outer>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon x-small v-on="on" style="margin-top: 2px">
+          <v-btn
+            icon
+            x-small
+            v-on="on"
+            style="margin-top: 2px"
+            v-bind:disabled="!allowExport"
+            v-on:click="handleExport"
+          >
             <v-icon>mdi-download</v-icon>
           </v-btn>
         </template>
@@ -45,6 +52,12 @@ export default {
   props: {
     label: String,
     value: String,
+    allowExport: Boolean,
+  },
+  methods: {
+    handleExport() {
+      this.$emit('export');
+    },
   },
 };
 </script>
