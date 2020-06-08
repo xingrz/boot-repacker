@@ -2,7 +2,7 @@
   <upload
     class="upload"
     ref="upload"
-    extensions="img"
+    accept=".img"
     v-model="files"
     v-bind:drop="true"
     v-bind:drop-directory="false"
@@ -31,6 +31,11 @@ export default {
   },
   mounted() {
     this.uploader = this.$refs.upload;
+  },
+  watch: {
+    selected(file) {
+      this.$emit('change', file);
+    },
   },
   methods: {
     selectFile(file) {

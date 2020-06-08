@@ -5,26 +5,36 @@
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="Magic"
-          value="ANDROID!"
+          v-bind:value="initial.magic"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValueEditor
           label="Page size"
-          value="4096"
+          v-bind:dec="true"
+          v-bind:initial="initial.page_size"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <v-select
           label="Header version"
           v-bind:items="['v0', 'v1', 'v2']"
-          value="v2"
+          v-bind:value="`v${initial.header_version}`"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="Header size"
-          value="1660"
+          v-bind:value="initial.header_size"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
+        <ValuePresenter
+          label="Image ID"
+          v-bind:value="initial.img_id"
         />
       </v-col>
     </v-row>
@@ -33,13 +43,14 @@
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="Kernel size"
-          value="35256332"
+          v-bind:value="initial.kernel_size"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValueEditor
           label="Kernel address"
-          hex value="00008000"
+          v-bind:hex="4"
+          v-bind:initial="initial.kernel_addr"
         />
       </v-col>
       <v-col cols="12" lg="6">
@@ -54,13 +65,14 @@
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="Ramdisk size"
-          value="812535"
+          v-bind:value="initial.ramdisk_size"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValueEditor
           label="Ramdisk address"
-          hex value="01000000"
+          v-bind:hex="4"
+          v-bind:initial="initial.ramdisk_addr"
         />
       </v-col>
       <v-col cols="12" lg="6">
@@ -75,13 +87,14 @@
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="2nd-stage BL size"
-          value="812535"
+          v-bind:value="initial.second_size"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValueEditor
           label="2nd-stage BL address"
-          hex value="00f00000"
+          v-bind:hex="4"
+          v-bind:initial="initial.second_addr"
         />
       </v-col>
       <v-col cols="12" lg="6">
@@ -96,13 +109,14 @@
       <v-col cols="6" lg="3">
         <ValueEditor
           label="Tags address"
-          hex value="00000100"
+          v-bind:hex="4"
+          v-bind:initial="initial.tags_addr"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="DT size"
-          value="0"
+          v-bind:value="initial.dt_size"
         />
       </v-col>
       <v-col cols="12" lg="6">
@@ -117,13 +131,13 @@
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="Recovery DTBO size"
-          value="0"
+          v-bind:value="initial.recovery_dtbo_size"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="Recovery DTBO offset"
-          value="0"
+          v-bind:value="initial.recovery_dtbo_offset"
         />
       </v-col>
       <v-col cols="12" lg="6">
@@ -138,13 +152,14 @@
       <v-col cols="6" lg="3">
         <ValuePresenter
           label="DTB size"
-          value="1541488"
+          v-bind:value="initial.dtb_size"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValueEditor
           label="DTB address"
-          hex value="01f00000"
+          v-bind:hex="4"
+          v-bind:initial="initial.dtb_addr"
         />
       </v-col>
       <v-col cols="12" lg="6">
@@ -159,19 +174,19 @@
       <v-col cols="6" lg="3">
         <ValueEditor
           label="OS patch level"
-          value="2020-03"
+          v-bind:initial="initial.os_patch_level"
         />
       </v-col>
       <v-col cols="6" lg="3">
         <ValueEditor
           label="OS version"
-          value="10.0.0"
+          v-bind:initial="initial.os_version"
         />
       </v-col>
       <v-col cols="12" lg="6">
         <ValueEditor
           label="Board"
-          value=""
+          v-bind:initial="initial.board"
         />
       </v-col>
     </v-row>
@@ -184,7 +199,7 @@
           rows="3"
           no-resize
           counter
-          value="console=ttyMSM0,115200n8 earlycon=msm_geni_serial,0xa90000 androidboot.hardware=qcom androidboot.console=ttyMSM0 androidboot.memcg=1 lpm_levels.sleep_disabled=1 video=vfb:640x400,bpp=32,memsize=3072000 msm_rtb.filter=0x237 service_locator.enable=1 androidboot.usbcontroller=a600000.dwc3 swiotlb=2048 loop.max_part=7 cgroup.memory=nokmem,nosocket reboot=panic_warm no_console_suspend buildvariant=user"
+          v-bind:value="initial.cmdline"
         />
       </v-col>
     </v-row>
@@ -203,6 +218,9 @@ export default {
     ValuePresenter,
     ValueEditor,
     ImageReplacer,
+  },
+  props: {
+    initial: Object,
   },
 };
 </script>

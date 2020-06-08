@@ -12,7 +12,7 @@ export default {
   name: 'ValuePresenter',
   props: {
     label: String,
-    value: String,
+    value: null,
   },
 };
 </script>
