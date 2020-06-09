@@ -3,6 +3,7 @@
     class="monospace"
     v-bind:label="label"
     v-bind:value="value"
+    v-bind:messages="value != initial ? 'Modified' : ''"
     disabled
   />
 </template>
@@ -12,6 +13,7 @@ export default {
   name: 'ValuePresenter',
   props: {
     label: String,
+    initial: null,
     value: null,
   },
 };

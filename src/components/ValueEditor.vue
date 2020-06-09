@@ -1,11 +1,12 @@
 <template>
   <v-text-field
     class="monospace"
-    v-model="value"
+    v-model="model"
     v-bind:label="label"
     v-bind:prefix="hex ? '0x' : ''"
     v-bind:messages="modified ? 'Modified' : ''"
-    v-bind:rules="[() => handleValidate(value)]"
+    v-bind:rules="[handleValidate]"
+    v-on:blur="handleBlur"
     placeholder=" "
   >
     <template v-slot:append v-if="modified">
@@ -27,44 +28,49 @@ export default {
   props: {
     label: String,
     initial: null,
+    value: null,
     dec: Boolean,
     hex: Number,
+    reg: RegExp,
   },
   data() {
     return {
-      value: this.format(this.initial),
+      model: this.format(this.initial),
     };
   },
   computed: {
     modified() {
-      return this.value != this.format(this.initial);
+      return this.value != this.initial;
     },
   },
   watch: {
     value(value) {
-      if (this.dec || this.hex) {
-        const v = this.parse(value);
-        if (!isNaN(v)) {
-          const s = this.format(v);
-          if (s != value) {
-            this.$nextTick(() => this.value = s);
-          }
-        }
+      this.model = this.format(value);
+    },
+    model(value) {
+      const v = this.parse(value);
+      if (v != this.value) {
+        this.$emit('change', v);
       }
     },
   },
   methods: {
     handleReset() {
-      this.value = this.format(this.initial);
+      this.$emit('change', this.initial);
     },
     handleValidate(value) {
       if (this.dec) {
         return !isNaN(this.parse(value));
       } else if (this.hex) {
         return !isNaN(this.parse(value)) && value.length == this.hex * 2;
+      } else if (this.reg) {
+        return typeof value == 'string' && !!value.match(this.reg);
       } else {
-        return !!value;
+        return true;
       }
+    },
+    handleBlur() {
+      this.model = this.format(this.value);
     },
     format(value) {
       if (this.hex > 0) {

@@ -6,7 +6,10 @@
           <v-col cols="12" sm="10" md="8">
             <v-expansion-panels accordion mandatory v-model="panel" v-bind:readonly="!file">
               <v-expansion-panel>
-                <v-expansion-panel-header><strong>1. Open an existing image</strong></v-expansion-panel-header>
+                <v-expansion-panel-header>
+                  <strong v-if="file == null">1. Open an existing image</strong>
+                  <strong v-else>1. Image: {{file.name}}</strong>
+                </v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <FileDrop v-on:change="handleFile" />
                 </v-expansion-panel-content>
@@ -16,10 +19,12 @@
                 <v-expansion-panel-content>
                   <Form
                     v-bind:initial="initial"
+                    v-bind:values="values"
+                    v-on:change="handleChange"
                     v-on:export="handleExport"
                   />
                   <div class="d-flex">
-                    <v-btn color="primary" text><v-icon left>mdi-restore</v-icon> Reset all</v-btn>
+                    <v-btn color="primary" text v-on:click="handleResetAll"><v-icon left>mdi-restore</v-icon> Reset all</v-btn>
                     <v-btn color="primary" text class="ml-auto" style="margin-right: 1em;" v-on:click="panel = 0">Back</v-btn>
                     <v-btn color="primary" depressed v-on:click="panel = 2">Next</v-btn>
                   </div>
@@ -65,6 +70,7 @@ export default {
       file: null,
       blob: null,
       initial: {},
+      values: {},
     };
   },
   methods: {
@@ -79,6 +85,12 @@ export default {
       } catch (e) {
         this.file = null;
       }
+    },
+    handleChange(key, value) {
+      this.values = { ...this.values, [key]: value };
+    },
+    handleResetAll() {
+      this.values = { ...this.initial };
     },
     handleExport(part, name) {
       const image = exportImage(this.blob, this.initial, part);
