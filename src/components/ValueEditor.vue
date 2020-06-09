@@ -52,13 +52,15 @@ export default {
     model(value) {
       const v = this.parse(value);
       if (v != this.value) {
-        this.$emit('change', v);
+        this.$nextTick(() => {
+          this.$emit('change', v);
+        });
       }
     },
   },
   methods: {
     handleReset() {
-      this.$emit('change', this.initial);
+      this.model = this.format(this.initial);
     },
     handleValidate(value) {
       if (this.dec) {
@@ -76,7 +78,13 @@ export default {
     },
     format(value) {
       if (this.hex > 0) {
-        return value.toString(16).toUpperCase().padStart(this.hex * 2, '0');
+        if (isNaN(value)) {
+          return 0;
+        } else {
+          return value.toString(16).toUpperCase().padStart(this.hex * 2, '0');
+        }
+      } else if (this.dec) {
+        return isNaN(value) ? 0 : value;
       } else {
         return value;
       }

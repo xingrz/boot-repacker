@@ -4,6 +4,7 @@
     v-bind:label="label"
     v-bind:value="value"
     v-bind:messages="value != initial ? 'Modified' : ''"
+    placeholder=" "
     disabled
   />
 </template>

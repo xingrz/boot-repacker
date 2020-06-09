@@ -63,6 +63,9 @@ export default function parseImage(array) {
   if (meta.header_version > 0) {
     meta.recovery_dtbo_size = buf.readUInt32LE();
     meta.recovery_dtbo_offset = buf.readUInt64LE();
+  } else {
+    meta.recovery_dtbo_size = 0;
+    meta.recovery_dtbo_offset = 0;
   }
 
   if (meta.header_version > 0) {
@@ -74,6 +77,9 @@ export default function parseImage(array) {
   if (meta.header_version > 1) {
     meta.dtb_size = buf.readUInt32LE();
     meta.dtb_addr = buf.readUInt64LE();
+  } else {
+    meta.dtb_size = 0;
+    meta.dtb_addr = 0;
   }
 
   return meta;
