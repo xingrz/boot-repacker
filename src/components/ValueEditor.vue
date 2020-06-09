@@ -10,21 +10,23 @@
     placeholder=" "
   >
     <template v-slot:append v-if="modified">
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn icon x-small v-on="on" style="margin-top: 2px" v-on:click="handleReset">
-            <v-icon>mdi-restore</v-icon>
-          </v-btn>
-        </template>
-        <span>Reset</span>
-      </v-tooltip>
+      <InlineButton
+        icon="mdi-restore"
+        hint="Reset"
+        v-on:click="handleReset"
+      />
     </template>
   </v-text-field>
 </template>
 
 <script>
+import InlineButton from './InlineButton';
+
 export default {
   name: 'ValueEditor',
+  components: {
+    InlineButton,
+  },
   props: {
     label: String,
     initial: null,
