@@ -20,7 +20,10 @@
                   <Form
                     v-bind:initial="initial"
                     v-bind:values="values"
+                    v-bind:images="images"
                     v-on:change="handleChange"
+                    v-on:replace="handleReplace"
+                    v-on:remove="handleRemove"
                     v-on:export="handleExport"
                   />
                   <div class="d-flex">
@@ -71,6 +74,7 @@ export default {
       blob: null,
       initial: {},
       values: {},
+      images: {},
     };
   },
   methods: {
@@ -81,6 +85,7 @@ export default {
         this.blob = await readFile(file);
         this.initial = parseImage(this.blob);
         this.values = { ...this.initial };
+        this.images = {};
         this.panel = 1;
       } catch (e) {
         this.file = null;
@@ -91,6 +96,20 @@ export default {
     },
     handleResetAll() {
       this.values = { ...this.initial };
+      this.images = {};
+    },
+    handleReplace(part, file) {
+      const sizeKey = `${part}_size`;
+      this.images = { ...this.images, [part]: file };
+      if (file) {
+        this.values = { ...this.values, [sizeKey]: file.size };
+      } else {
+        this.values = { ...this.values, [sizeKey]: this.initial[sizeKey] };
+      }
+    },
+    handleRemove(part) {
+      this.images = { ...this.images, [part]: { removed: true } };
+      this.values = { ...this.values, [`${part}_size`]: 0 };
     },
     handleExport(part, name) {
       const image = exportImage(this.blob, this.initial, part);

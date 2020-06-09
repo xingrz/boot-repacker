@@ -66,8 +66,11 @@
       <v-col cols="12" lg="6">
         <ImageReplacer
           label="Kernel image"
-          value="kernel.img"
-          v-bind:allow-export="initial.kernel_size > 0"
+          default-name="kernel.img"
+          v-bind:image="images.kernel"
+          v-bind:presence="initial.kernel_size > 0"
+          v-on:replace="(file)=> handleReplace('kernel', file)"
+          v-on:remove="()=> handleRemove('kernel')"
           v-on:export="()=> handleExport('kernel', 'kernel.img')"
         />
       </v-col>
@@ -93,8 +96,11 @@
       <v-col cols="12" lg="6">
         <ImageReplacer
           label="Ramdisk image"
-          value="ramdisk.img"
-          v-bind:allow-export="initial.ramdisk_size > 0"
+          default-name="ramdisk.img"
+          v-bind:image="images.ramdisk"
+          v-bind:presence="initial.ramdisk_size > 0"
+          v-on:replace="(file)=> handleReplace('ramdisk', file)"
+          v-on:remove="()=> handleRemove('ramdisk')"
           v-on:export="()=> handleExport('ramdisk', 'ramdisk.img')"
         />
       </v-col>
@@ -120,8 +126,11 @@
       <v-col cols="12" lg="6">
         <ImageReplacer
           label="2nd-stage BL image"
-          value="second.img"
-          v-bind:allow-export="initial.second_size > 0"
+          default-name="second.img"
+          v-bind:image="images.second"
+          v-bind:presence="initial.second_size > 0"
+          v-on:replace="(file)=> handleReplace('second', file)"
+          v-on:remove="()=> handleRemove('second')"
           v-on:export="()=> handleExport('second', 'second.img')"
         />
       </v-col>
@@ -147,8 +156,11 @@
       <v-col cols="12" lg="6" v-if="values.header_version == 0">
         <ImageReplacer
           label="DT image"
-          value="dt.img"
-          v-bind:allow-export="initial.dt_size > 0"
+          default-name="dt.img"
+          v-bind:image="images.dt"
+          v-bind:presence="initial.dt_size > 0"
+          v-on:replace="(file)=> handleReplace('dt', file)"
+          v-on:remove="()=> handleRemove('dt')"
           v-on:export="()=> handleExport('dt', 'dt.img')"
         />
       </v-col>
@@ -172,8 +184,11 @@
       <v-col cols="12" lg="6">
         <ImageReplacer
           label="Recovery DTBO image"
-          value="recovery_dtbo.img"
-          v-bind:allow-export="initial.recovery_dtbo_size > 0"
+          default-name="recovery_dtbo.img"
+          v-bind:image="images.recovery_dtbo"
+          v-bind:presence="initial.recovery_dtbo_size > 0"
+          v-on:replace="(file)=> handleReplace('recovery_dtbo', file)"
+          v-on:remove="()=> handleRemove('recovery_dtbo')"
           v-on:export="()=> handleExport('recovery_dtbo', 'recovery_dtbo.img')"
         />
       </v-col>
@@ -199,8 +214,11 @@
       <v-col cols="12" lg="6">
         <ImageReplacer
           label="DTB image"
-          value="dtb.img"
-          v-bind:allow-export="initial.dtb_size > 0"
+          default-name="dtb.img"
+          v-bind:image="images.dtb"
+          v-bind:presence="initial.dtb_size > 0"
+          v-on:replace="(file)=> handleReplace('dtb', file)"
+          v-on:remove="()=> handleRemove('dtb')"
           v-on:export="()=> handleExport('dtb', 'dtb.img')"
         />
       </v-col>
@@ -270,6 +288,7 @@ export default {
   props: {
     initial: Object,
     values: Object,
+    images: Object,
   },
   data() {
     return {
@@ -287,6 +306,12 @@ export default {
         const { size } = this.header_versions.find(i => i.value == value);
         this.$emit('change', 'header_size', size);
       }
+    },
+    handleReplace(part, file) {
+      this.$emit('replace', part, file);
+    },
+    handleRemove(part) {
+      this.$emit('remove', part);
     },
     handleExport(part, name) {
       this.$emit('export', part, name);

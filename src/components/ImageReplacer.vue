@@ -2,59 +2,88 @@
   <v-text-field
     class="monospace"
     v-bind:label="label"
-    v-bind:value="value"
+    v-bind:value="model"
+    v-bind:messages="modified ? 'Modified' : ''"
+    v-bind:placeholder="removed ? 'Removed' : 'Not present'"
     readonly
   >
     <template v-slot:append>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn icon x-small v-on="on" style="margin-top: 2px">
-            <v-icon>mdi-dots-vertical</v-icon>
-          </v-btn>
-        </template>
-        <span>Replace</span>
-      </v-tooltip>
-
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn icon x-small v-on="on" style="margin-top: 2px">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-        <span>Remove</span>
-      </v-tooltip>
-
+      <template v-if="!modified">
+        <InlineButton
+          icon="mdi-dots-vertical"
+          hint="Replace"
+          v-on:click="handleReplace"
+        />
+        <InlineButton
+          v-if="presence"
+          icon="mdi-close"
+          hint="Remove"
+          v-on:click="handleRemove"
+        />
+      </template>
+      <template v-else>
+        <InlineButton
+          icon="mdi-restore"
+          hint="Reset"
+          v-on:click="handleReset"
+        />
+      </template>
     </template>
 
     <template v-slot:append-outer>
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn
-            icon
-            x-small
-            v-on="on"
-            style="margin-top: 2px"
-            v-bind:disabled="!allowExport"
-            v-on:click="handleExport"
-          >
-            <v-icon>mdi-download</v-icon>
-          </v-btn>
-        </template>
-        <span>Export</span>
-      </v-tooltip>
+      <InlineButton
+        icon="mdi-download"
+        hint="Export"
+        v-bind:disabled="!presence || modified"
+        v-on:click="handleExport"
+      />
     </template>
   </v-text-field>
 </template>
 
 <script>
+import fileDialog from 'file-dialog';
+
+import InlineButton from './InlineButton';
+
 export default {
   name: 'ImageReplacer',
+  components: {
+    InlineButton,
+  },
   props: {
     label: String,
-    value: String,
-    allowExport: Boolean,
+    defaultName: String,
+    image: null,
+    presence: Boolean,
+  },
+  computed: {
+    model() {
+      if (this.replaced) return this.image.name;
+      if (this.removed || !this.presence) return null;
+      return this.defaultName;
+    },
+    modified() {
+      return !!this.image;
+    },
+    removed() {
+      return this.modified && this.image.removed;
+    },
+    replaced() {
+      return this.modified && this.image.name;
+    },
   },
   methods: {
+    async handleReplace() {
+      const [file] = await fileDialog();
+      this.$emit('replace', file);
+    },
+    handleRemove() {
+      this.$emit('remove');
+    },
+    handleReset() {
+      this.$emit('replace', null);
+    },
     handleExport() {
       this.$emit('export');
     },
