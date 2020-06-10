@@ -96,12 +96,12 @@
       <v-col cols="12" lg="6">
         <ImageReplacer
           label="Ramdisk image"
-          default-name="ramdisk.img"
+          default-name="ramdisk.cpio.gz"
           v-bind:image="images.ramdisk"
           v-bind:presence="initial.ramdisk_size > 0"
           v-on:replace="(file)=> handleReplace('ramdisk', file)"
           v-on:remove="()=> handleRemove('ramdisk')"
-          v-on:export="()=> handleExport('ramdisk', 'ramdisk.img')"
+          v-on:export="()=> handleExport('ramdisk', 'ramdisk.cpio.gz')"
         />
       </v-col>
     </v-row>
