@@ -170,7 +170,7 @@ async function arrange(source, initial, values, images) {
   }
 
   const parts = {};
-  let image_offset = 0;
+  let image_offset = 1 * page_size; // header size
 
   for (const part of names) {
     if (images[part] && images[part].removed) {
