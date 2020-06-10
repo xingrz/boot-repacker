@@ -116,25 +116,36 @@ function calculateVersion(patch_level, version) {
   return bits;
 }
 
+function bufferFromUInt32LE(value) {
+  const buf = Buffer.alloc(4);
+  buf.writeUInt32LE(value);
+  return buf;
+}
+
+function appendForDigest(bufs, part) {
+  if (part.size > 0) {
+    bufs.push(part.buffer);
+  }
+  bufs.push(bufferFromUInt32LE(part.size));
+}
+
 async function calculateImageId(parts) {
   const bufs = [];
-  if (parts.kernel.buffer) {
-    bufs.push(parts.kernel.buffer);
+
+  appendForDigest(bufs, parts.kernel);
+  appendForDigest(bufs, parts.ramdisk);
+  appendForDigest(bufs, parts.second);
+
+  if (parts.dt && parts.dt.size) {
+    appendForDigest(bufs, parts.dt);
   }
-  if (parts.ramdisk.buffer) {
-    bufs.push(parts.ramdisk.buffer);
+
+  if (parts.recovery_dtbo) {
+    appendForDigest(bufs, parts.recovery_dtbo);
   }
-  if (parts.second.buffer) {
-    bufs.push(parts.second.buffer);
-  }
-  if (parts.dt && parts.dt.buffer) {
-    bufs.push(parts.dt.buffer);
-  }
-  if (parts.recovery_dtbo && parts.recovery_dtbo.buffer) {
-    bufs.push(parts.recovery_dtbo.buffer);
-  }
-  if (parts.dtb && parts.dtb.buffer) {
-    bufs.push(parts.dtb.buffer);
+
+  if (parts.dtb) {
+    appendForDigest(bufs, parts.dtb);
   }
 
   const data = Buffer.concat(bufs);
