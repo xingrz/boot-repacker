@@ -61,6 +61,7 @@ import readFile from './utils/readFile';
 import parseImage from './utils/parseImage';
 import exportImage from './utils/exportImage'
 import buildImage from './utils/buildImage';
+import calculatePosition from './utils/calculatePosition';
 
 export default {
   name: 'App',
@@ -99,6 +100,10 @@ export default {
       this.values = { ...this.initial };
       this.images = {};
     },
+    updateRecoveryDtboOffset() {
+      const { offset, size } = calculatePosition('recovery_dtbo', this.values);
+      this.values = { ...this.values, recovery_dtbo_offset: (size > 0 ? offset : 0) };
+    },
     handleReplace(part, file) {
       const sizeKey = `${part}_size`;
       this.images = { ...this.images, [part]: file };
@@ -107,10 +112,12 @@ export default {
       } else {
         this.values = { ...this.values, [sizeKey]: this.initial[sizeKey] };
       }
+      this.updateRecoveryDtboOffset();
     },
     handleRemove(part) {
       this.images = { ...this.images, [part]: { removed: true } };
       this.values = { ...this.values, [`${part}_size`]: 0 };
+      this.updateRecoveryDtboOffset();
     },
     handleExport(part, name) {
       const image = exportImage(this.blob, this.initial, part);
