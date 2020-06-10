@@ -4,6 +4,10 @@
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
           <v-col cols="12" sm="10" md="8">
+            <header>
+              <h1>Boot Repacker by MoKee</h1>
+            </header>
+
             <v-expansion-panels accordion mandatory v-model="panel" v-bind:readonly="!file">
               <v-expansion-panel>
                 <v-expansion-panel-header>
@@ -44,6 +48,10 @@
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </v-expansion-panels>
+
+            <footer>
+              Copyright &copy; 2020 MoKee Open Source Project
+            </footer>
           </v-col>
         </v-row>
       </v-container>
@@ -132,3 +140,22 @@ export default {
   },
 };
 </script>
+
+<style>
+header {
+  text-align: center;
+  margin: 0 0 20px;
+}
+
+header h1 {
+  font-size: 24px;
+  font-weight: normal;
+}
+
+footer {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin: 10px 0 0;
+}
+</style>
