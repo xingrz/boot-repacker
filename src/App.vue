@@ -37,7 +37,7 @@
                 <v-expansion-panel-header><strong>3. Export</strong></v-expansion-panel-header>
                 <v-expansion-panel-content>
                   <div class="d-flex flex-column justify-center align-center" style="padding-top: 40px; padding-bottom: 40px;">
-                    <v-btn color="primary" depressed large>
+                    <v-btn color="primary" depressed large v-on:click="handleBuild">
                       <v-icon left>mdi-download</v-icon> Export
                     </v-btn>
                   </div>
@@ -60,6 +60,7 @@ import Form from './components/Form';
 import readFile from './utils/readFile';
 import parseImage from './utils/parseImage';
 import exportImage from './utils/exportImage'
+import buildImage from './utils/buildImage';
 
 export default {
   name: 'App',
@@ -115,6 +116,11 @@ export default {
       const image = exportImage(this.blob, this.initial, part);
       const blob = new Blob([ image ]);
       saveAs(blob, name);
+    },
+    async handleBuild() {
+      const image = await buildImage(this.blob, this.initial, this.values, this.images);
+      const blob = new Blob([ image ]);
+      saveAs(blob, `${this.file.name}-rebuilt.img`);
     },
   },
 };
