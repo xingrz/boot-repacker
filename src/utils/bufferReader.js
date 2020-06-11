@@ -8,9 +8,15 @@ export default class BufferReader {
   }
 
   read(count) {
-    const buf = this.buffer.slice(this.ptr, this.ptr + count);
-    this.ptr += count;
-    return buf;
+    if (typeof count == 'undefined') {
+      const buf = this.buffer.slice(this.ptr);
+      this.ptr = this.buffer.length;
+      return buf;
+    } else {
+      const buf = this.buffer.slice(this.ptr, this.ptr + count);
+      this.ptr += count;
+      return buf;
+    }
   }
 
   readUInt32LE() {
@@ -31,6 +37,10 @@ export default class BufferReader {
 
   tell() {
     return this.ptr;
+  }
+
+  seek(ptr) {
+    this.ptr = ptr;
   }
 
 }

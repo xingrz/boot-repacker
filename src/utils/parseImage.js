@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer';
 import BufferReader from './bufferReader';
 import numberOfPages from './numberOfPages';
+import { parseVerifiedBoot1 } from './verifiedBoot1';
 
 const MAGIC = 'ANDROID!';
 
@@ -123,6 +124,11 @@ export default function parseImage(array) {
   } else {
     meta.dtb = null;
   }
+
+  meta.total_size = offset;
+
+  buf.seek(offset);
+  meta.verified_boot_1 = parseVerifiedBoot1(buf);
 
   return meta;
 }
