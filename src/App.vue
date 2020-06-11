@@ -60,6 +60,7 @@
 
 <script>
 import { saveAs } from 'file-saver';
+import { debounce } from 'throttle-debounce';
 
 import FileDrop from './components/FileDrop';
 import Form from './components/Form';
@@ -110,10 +111,10 @@ export default {
       const { offset, size } = calculatePosition('recovery_dtbo', this.values);
       this.values = { ...this.values, recovery_dtbo_offset: (size > 0 ? offset : 0) };
     },
-    async updateImageId() {
+    updateImageId: debounce(200, async function () {
       const img_id = await calculateImageId(this.blob, this.values);
       this.values = { ...this.values, img_id: img_id.toString('hex') };
-    },
+    }),
     handleReplace(part, file) {
       const size = `${part}_size`;
       if (file) {
