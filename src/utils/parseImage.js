@@ -72,7 +72,7 @@ export default function parseImage(array) {
   if (meta.header_version > 0) {
     meta.header_size = buf.readUInt32LE();
   } else {
-    meta.header_size = 0;
+    meta.header_size = null;
   }
 
   if (meta.header_version > 1) {

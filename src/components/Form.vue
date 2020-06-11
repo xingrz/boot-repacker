@@ -292,7 +292,7 @@ export default {
   data() {
     return {
       header_versions: [
-        { value: 0, text: 'v0', size: 1632 },
+        { value: 0, text: 'v0', size: null },
         { value: 1, text: 'v1', size: 1648 },
         { value: 2, text: 'v2', size: 1660 },
       ],
