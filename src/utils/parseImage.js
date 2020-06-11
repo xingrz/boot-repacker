@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
 import BufferReader from './bufferReader';
+import numberOfPages from './numberOfPages';
 
 const MAGIC = 'ANDROID!';
 
@@ -71,7 +72,7 @@ export default function parseImage(array) {
   if (meta.header_version > 0) {
     meta.header_size = buf.readUInt32LE();
   } else {
-    meta.header_size = 1632;
+    meta.header_size = 0;
   }
 
   if (meta.header_version > 1) {
@@ -80,6 +81,47 @@ export default function parseImage(array) {
   } else {
     meta.dtb_size = 0;
     meta.dtb_addr = 0;
+  }
+
+  let offset = buf.tell();
+  offset = nextPage(offset, meta.page_size);
+
+  meta.kernel = { offset, size: meta.kernel_size };
+  offset = nextPage(offset + meta.kernel_size, meta.page_size);
+
+  meta.ramdisk = { offset, size: meta.ramdisk_size };
+  offset = nextPage(offset + meta.ramdisk_size, meta.page_size);
+
+  if (meta.second_size > 0) {
+    meta.second = { offset, size: meta.second_size };
+    offset = nextPage(offset + meta.second_size, meta.page_size);
+  } else {
+    meta.second = null;
+  }
+
+  if (meta.dt_size > 0) {
+    meta.dt = { offset, size: meta.dt_size };
+    offset = nextPage(offset + meta.dt_size, meta.page_size);
+  } else {
+    meta.dt = null;
+  }
+
+  if (meta.recovery_dtbo_size > 0) {
+    if (meta.recovery_dtbo_offset != offset) {
+      throw new Error('Mismatch recovery_dtbo_offset!');
+    }
+
+    meta.recovery_dtbo = { offset, size: meta.recovery_dtbo_size };
+    offset = nextPage(offset + meta.recovery_dtbo_size, meta.page_size);
+  } else {
+    meta.recovery_dtbo = null;
+  }
+
+  if (meta.dtb_size > 0) {
+    meta.dtb = { offset, size: meta.dtb_size };
+    offset = nextPage(offset + meta.dtb_size, meta.page_size);
+  } else {
+    meta.dtb = null;
   }
 
   return meta;
@@ -92,4 +134,8 @@ function toString(buf) {
     }
   }
   return buf.toString();
+}
+
+function nextPage(offset, page_size) {
+  return page_size * numberOfPages(offset, page_size);
 }

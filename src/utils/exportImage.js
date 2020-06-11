@@ -1,6 +1,4 @@
-import calculatePosition from './calculatePosition';
-
-export default function extractImage(image, meta, part) {
-  const { offset, size } = calculatePosition(part, meta);
+export default function exportImage(image, meta, part) {
+  const { offset, size } = meta[part];
   return image.slice(offset, offset + size);
 }

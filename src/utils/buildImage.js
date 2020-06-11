@@ -1,47 +1,38 @@
 import { Buffer } from 'buffer';
 
 import BufferWriter from './bufferWriter';
+import readImage from './readImage';
 import numberOfPages from './numberOfPages';
-import calculatePosition from './calculatePosition';
-import readFile from './readFile';
 
-const BOOT_IMAGE_HEADER_V1_SIZE = 1648
-const BOOT_IMAGE_HEADER_V2_SIZE = 1660
-const BOOT_MAGIC = Buffer.from('ANDROID!');
+const PARTS = ['kernel', 'ramdisk', 'second', 'dt', 'recovery_dtbo', 'dtb'];
 
-export default async function buildImage(source, initial, values, images) {
-  const parts = await arrange(source, initial, values, images);
-  const totalSize = caclulateTotalSize(parts, values.page_size);
+export default async function buildImage(source, values) {
+  const totalSize = caclulateTotalSize(values);
   const buffer = new BufferWriter(totalSize);
 
-  const img_id = await calculateImageId(parts);
+  writeHeader(buffer, values);
 
-  writeHeader(buffer, parts, values, img_id);
-
-  writePart(buffer, parts.kernel, values.page_size);
-  writePart(buffer, parts.ramdisk, values.page_size);
-  writePart(buffer, parts.second, values.page_size);
-  writePart(buffer, parts.dt, values.page_size);
-  writePart(buffer, parts.recovery_dtbo, values.page_size);
-  writePart(buffer, parts.dtb, values.page_size);
+  for (const part of PARTS) {
+    await writePart(buffer, source, values[part], values.page_size);
+  }
 
   return buffer.buffer;
 }
 
-function writeHeader(buffer, parts, values, img_id) {
-  buffer.write(BOOT_MAGIC);
+function writeHeader(buffer, values) {
+  buffer.write(Buffer.from(values.magic));
 
-  buffer.writeUInt32LE(parts.kernel.size);
+  buffer.writeUInt32LE(values.kernel_size);
   buffer.writeUInt32LE(values.kernel_addr);
-  buffer.writeUInt32LE(parts.ramdisk.size);
+  buffer.writeUInt32LE(values.ramdisk_size);
   buffer.writeUInt32LE(values.ramdisk_addr);
-  buffer.writeUInt32LE(parts.second.size);
+  buffer.writeUInt32LE(values.second_size);
   buffer.writeUInt32LE(values.second_addr);
   buffer.writeUInt32LE(values.tags_addr);
   buffer.writeUInt32LE(values.page_size);
 
-  if (parts.dt) {
-    buffer.writeUInt32LE(parts.dt.size);
+  if (values.dt_size > 0) {
+    buffer.writeUInt32LE(values.dt_size);
   } else {
     buffer.writeUInt32LE(values.header_version);
   }
@@ -55,37 +46,36 @@ function writeHeader(buffer, parts, values, img_id) {
   const cmdline = Buffer.alloc(512 + 1024, 0x00);
   Buffer.from(values.cmdline).copy(cmdline);
   buffer.write(cmdline.slice(0, 512));
+
+  const img_id = Buffer.alloc(32, 0x00);
+  Buffer.from(values.img_id, 'hex').copy(img_id);
   buffer.write(img_id);
+
   buffer.write(cmdline.slice(512));
 
-  if (parts.recovery_dtbo) {
-    const { size, offset } = parts.recovery_dtbo;
-    buffer.writeUInt32LE(size);
-    buffer.writeUInt64LE(size > 0 ? offset : 0);
+  if (values.header_version > 0) {
+    buffer.writeUInt32LE(values.recovery_dtbo_size);
+    buffer.writeUInt64LE(values.recovery_dtbo_offset);
   }
 
-  if (values.header_version == 1) {
-    buffer.writeUInt32LE(BOOT_IMAGE_HEADER_V1_SIZE);
-  } else if (values.header_version == 2) {
-    buffer.writeUInt32LE(BOOT_IMAGE_HEADER_V2_SIZE);
+  if (values.header_version > 0) {
+    buffer.writeUInt32LE(values.header_size);
   }
 
-  if (parts.dtb) {
-    buffer.writeUInt32LE(parts.dtb.size);
+  if (values.header_version > 1) {
+    buffer.writeUInt32LE(values.dtb_size);
     buffer.writeUInt64LE(values.dtb_addr);
   }
 
   padFile(buffer, values.page_size);
 }
 
-function writePart(buffer, part, page_size) {
-  if (!part) return;
-
-  if (part.buffer) {
-    buffer.write(part.buffer);
+async function writePart(buffer, image, part, page_size) {
+  const buf = await readImage(image, part);
+  if (buf) {
+    buffer.write(Buffer.from(buf));
+    padFile(buffer, page_size);
   }
-
-  padFile(buffer, page_size);
 }
 
 function padFile(buffer, page_size) {
@@ -116,101 +106,10 @@ function calculateVersion(patch_level, version) {
   return bits;
 }
 
-function bufferFromUInt32LE(value) {
-  const buf = Buffer.alloc(4);
-  buf.writeUInt32LE(value);
-  return buf;
-}
-
-function appendForDigest(bufs, part) {
-  if (part.size > 0) {
-    bufs.push(part.buffer);
+function caclulateTotalSize(values) {
+  let pages = 1; // header
+  for (const part of PARTS) {
+    pages += numberOfPages(values[`${part}_size`], values.page_size);
   }
-  bufs.push(bufferFromUInt32LE(part.size));
-}
-
-async function calculateImageId(parts) {
-  const bufs = [];
-
-  appendForDigest(bufs, parts.kernel);
-  appendForDigest(bufs, parts.ramdisk);
-  appendForDigest(bufs, parts.second);
-
-  if (parts.dt && parts.dt.size) {
-    appendForDigest(bufs, parts.dt);
-  }
-
-  if (parts.recovery_dtbo) {
-    appendForDigest(bufs, parts.recovery_dtbo);
-  }
-
-  if (parts.dtb) {
-    appendForDigest(bufs, parts.dtb);
-  }
-
-  const data = Buffer.concat(bufs);
-  const digest = await crypto.subtle.digest('SHA-1', data.buffer);
-
-  const img_id = Buffer.alloc(32, 0x00);
-  Buffer.from(digest).copy(img_id);
-
-  return img_id;
-}
-
-function caclulateTotalSize(parts, page_size) {
-  let size = 1 * page_size; // header size
-  for (const part in parts) {
-    size += parts[part].size_paged;
-  }
-  return size;
-}
-
-async function arrange(source, initial, values, images) {
-  const src = Buffer.from(source);
-  const { header_version, page_size } = values;
-
-  const names = ['kernel', 'ramdisk', 'second'];
-  if (header_version == 0) {
-    names.push('dt');
-  }
-  if (header_version > 0) {
-    names.push('recovery_dtbo');
-  }
-  if (header_version > 1) {
-    names.push('dtb');
-  }
-
-  const parts = {};
-  let image_offset = 1 * page_size; // header size
-
-  for (const part of names) {
-    if (images[part] && images[part].removed) {
-      parts[part] = {
-        size_paged: 0,
-        size: 0,
-      };
-    }
-    if (images[part] && images[part].name)  {
-      const size_paged = page_size * numberOfPages(images[part].size, page_size);
-      parts[part] = {
-        size_paged: size_paged,
-        size: images[part].size,
-        offset: image_offset,
-        buffer: Buffer.from(await readFile(images[part])),
-      };
-      image_offset += size_paged;
-    } else {
-      const size_paged = page_size * numberOfPages(values[`${part}_size`], page_size);
-      const { offset, size } = calculatePosition(part, initial);
-      parts[part] = {
-        size_paged: size_paged,
-        size: size,
-        offset: image_offset,
-        buffer: Buffer.from(src.slice(offset, offset + size)),
-      };
-      image_offset += size_paged;
-    }
-  }
-
-  return parts;
+  return pages * values.page_size;
 }

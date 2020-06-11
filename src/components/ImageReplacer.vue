@@ -2,7 +2,7 @@
   <v-text-field
     class="monospace"
     v-bind:label="label"
-    v-bind:value="model"
+    v-bind:value="name"
     v-bind:messages="modified ? 'Modified' : ''"
     v-bind:placeholder="removed ? 'Removed' : 'Not present'"
     readonly
@@ -54,23 +54,26 @@ export default {
   props: {
     label: String,
     defaultName: String,
-    image: null,
-    presence: Boolean,
+    initial: null,
+    value: null,
   },
   computed: {
-    model() {
-      if (this.replaced) return this.image.name;
+    name() {
+      if (this.replaced) return this.value.name;
       if (this.removed || !this.presence) return null;
       return this.defaultName;
     },
+    presence() {
+      return this.initial != null;
+    },
     modified() {
-      return !!this.image;
+      return this.initial != this.value;
     },
     removed() {
-      return this.modified && this.image.removed;
+      return this.modified && this.value == null;
     },
     replaced() {
-      return this.modified && this.image.name;
+      return this.modified && this.value instanceof File;
     },
   },
   methods: {

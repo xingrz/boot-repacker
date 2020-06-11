@@ -29,4 +29,8 @@ export default class BufferReader {
     this.ptr = 0;
   }
 
+  tell() {
+    return this.ptr;
+  }
+
 }

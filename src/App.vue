@@ -24,7 +24,6 @@
                   <Form
                     v-bind:initial="initial"
                     v-bind:values="values"
-                    v-bind:images="images"
                     v-on:change="handleChange"
                     v-on:replace="handleReplace"
                     v-on:remove="handleRemove"
@@ -69,6 +68,7 @@ import readFile from './utils/readFile';
 import parseImage from './utils/parseImage';
 import exportImage from './utils/exportImage'
 import buildImage from './utils/buildImage';
+import calculateImageId from './utils/calculateImageId';
 import calculatePosition from './utils/calculatePosition';
 
 export default {
@@ -84,7 +84,6 @@ export default {
       blob: null,
       initial: {},
       values: {},
-      images: {},
     };
   },
   methods: {
@@ -95,9 +94,9 @@ export default {
         this.blob = await readFile(file);
         this.initial = parseImage(this.blob);
         this.values = { ...this.initial };
-        this.images = {};
         this.panel = 1;
       } catch (e) {
+        console.error('Failed parsing image', e);
         this.file = null;
       }
     },
@@ -106,26 +105,42 @@ export default {
     },
     handleResetAll() {
       this.values = { ...this.initial };
-      this.images = {};
     },
     updateRecoveryDtboOffset() {
       const { offset, size } = calculatePosition('recovery_dtbo', this.values);
       this.values = { ...this.values, recovery_dtbo_offset: (size > 0 ? offset : 0) };
     },
+    async updateImageId() {
+      const img_id = await calculateImageId(this.blob, this.values);
+      this.values = { ...this.values, img_id: img_id.toString('hex') };
+    },
     handleReplace(part, file) {
-      const sizeKey = `${part}_size`;
-      this.images = { ...this.images, [part]: file };
+      const size = `${part}_size`;
       if (file) {
-        this.values = { ...this.values, [sizeKey]: file.size };
+        this.values = {
+          ...this.values,
+          [part]: file,
+          [size]: file.size,
+        };
       } else {
-        this.values = { ...this.values, [sizeKey]: this.initial[sizeKey] };
+        this.values = {
+          ...this.values,
+          [part]: this.initial[part],
+          [size]: this.initial[size],
+        };
       }
       this.updateRecoveryDtboOffset();
+      this.updateImageId();
     },
     handleRemove(part) {
-      this.images = { ...this.images, [part]: { removed: true } };
-      this.values = { ...this.values, [`${part}_size`]: 0 };
+      const size = `${part}_size`;
+      this.values = {
+        ...this.values,
+        [part]: null,
+        [size]: 0,
+      };
       this.updateRecoveryDtboOffset();
+      this.updateImageId();
     },
     handleExport(part, name) {
       const image = exportImage(this.blob, this.initial, part);
@@ -133,7 +148,7 @@ export default {
       saveAs(blob, name);
     },
     async handleBuild() {
-      const image = await buildImage(this.blob, this.initial, this.values, this.images);
+      const image = await buildImage(this.blob, this.values);
       const blob = new Blob([ image ]);
       saveAs(blob, `${this.file.name}-rebuilt.img`);
     },

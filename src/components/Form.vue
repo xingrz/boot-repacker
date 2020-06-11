@@ -67,8 +67,8 @@
         <ImageReplacer
           label="Kernel image"
           default-name="kernel.img"
-          v-bind:image="images.kernel"
-          v-bind:presence="initial.kernel_size > 0"
+          v-bind:initial="initial.kernel"
+          v-bind:value="values.kernel"
           v-on:replace="(file)=> handleReplace('kernel', file)"
           v-on:remove="()=> handleRemove('kernel')"
           v-on:export="()=> handleExport('kernel', 'kernel.img')"
@@ -97,8 +97,8 @@
         <ImageReplacer
           label="Ramdisk image"
           default-name="ramdisk.cpio.gz"
-          v-bind:image="images.ramdisk"
-          v-bind:presence="initial.ramdisk_size > 0"
+          v-bind:initial="initial.ramdisk"
+          v-bind:value="values.ramdisk"
           v-on:replace="(file)=> handleReplace('ramdisk', file)"
           v-on:remove="()=> handleRemove('ramdisk')"
           v-on:export="()=> handleExport('ramdisk', 'ramdisk.cpio.gz')"
@@ -127,8 +127,8 @@
         <ImageReplacer
           label="2nd-stage BL image"
           default-name="second.img"
-          v-bind:image="images.second"
-          v-bind:presence="initial.second_size > 0"
+          v-bind:initial="initial.second"
+          v-bind:value="values.second"
           v-on:replace="(file)=> handleReplace('second', file)"
           v-on:remove="()=> handleRemove('second')"
           v-on:export="()=> handleExport('second', 'second.img')"
@@ -157,8 +157,8 @@
         <ImageReplacer
           label="DT image"
           default-name="dt.img"
-          v-bind:image="images.dt"
-          v-bind:presence="initial.dt_size > 0"
+          v-bind:initial="initial.dt"
+          v-bind:value="values.dt"
           v-on:replace="(file)=> handleReplace('dt', file)"
           v-on:remove="()=> handleRemove('dt')"
           v-on:export="()=> handleExport('dt', 'dt.img')"
@@ -185,8 +185,8 @@
         <ImageReplacer
           label="Recovery DTBO image"
           default-name="recovery_dtbo.img"
-          v-bind:image="images.recovery_dtbo"
-          v-bind:presence="initial.recovery_dtbo_size > 0"
+          v-bind:initial="initial.recovery_dtbo"
+          v-bind:value="values.recovery_dtbo"
           v-on:replace="(file)=> handleReplace('recovery_dtbo', file)"
           v-on:remove="()=> handleRemove('recovery_dtbo')"
           v-on:export="()=> handleExport('recovery_dtbo', 'recovery_dtbo.img')"
@@ -215,8 +215,8 @@
         <ImageReplacer
           label="DTB image"
           default-name="dtb.img"
-          v-bind:image="images.dtb"
-          v-bind:presence="initial.dtb_size > 0"
+          v-bind:initial="initial.dtb"
+          v-bind:value="values.dtb"
           v-on:replace="(file)=> handleReplace('dtb', file)"
           v-on:remove="()=> handleRemove('dtb')"
           v-on:export="()=> handleExport('dtb', 'dtb.img')"
@@ -288,7 +288,6 @@ export default {
   props: {
     initial: Object,
     values: Object,
-    images: Object,
   },
   data() {
     return {
