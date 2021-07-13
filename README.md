@@ -1,4 +1,4 @@
-[Boot Repacker by MoKee](https://boot.mokeedev.com/)
+[Boot Repacker by MoKee](https://boot.mokeedev.com/) [![Auto deploy](https://github.com/MoKee/boot-repacker/actions/workflows/deploy.yml/badge.svg)](https://github.com/MoKee/boot-repacker/actions/workflows/deploy.yml)
 ==========
 
 Unpacking and repacking Android bootable images in your browser.
