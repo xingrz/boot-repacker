@@ -7,51 +7,49 @@
     v-bind:messages="modified ? 'Modified' : ''"
   >
     <template v-slot:append-outer v-if="modified">
-      <InlineButton
-        icon="mdi-restore"
-        hint="Reset"
-        v-on:click="handleReset"
-      />
+      <InlineButton icon="mdi-restore" hint="Reset" v-on:click="handleReset" />
     </template>
   </v-select>
 </template>
 
-<script>
-import InlineButton from './InlineButton';
+<script lang="ts">
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 
-export default {
-  name: 'SelectEditor',
+import InlineButton from "./InlineButton.vue";
+
+@Component({
   components: {
     InlineButton,
   },
-  props: {
-    label: String,
-    items: Array,
-    initial: null,
-    value: null,
-  },
-  data() {
-    return {
-      model: this.initial,
-    };
-  },
-  computed: {
-    modified() {
-      return this.value != this.initial;
-    },
-  },
-  watch: {
-    value(value) {
-      this.model = value;
-    },
-    model(value) {
-      this.$emit('change', value);
-    },
-  },
-  methods: {
-    handleReset() {
-      this.$emit('change', this.initial);
-    },
-  },
-};
+})
+export default class SelectEditor<T = string | number> extends Vue {
+  @Prop(String) label!: string;
+  @Prop(Array) items!: { value: T; text: string }[];
+  @Prop() initial!: T | null;
+  @Prop() value!: T | null;
+
+  model: T | null = null;
+
+  mounted(): void {
+    this.model = this.initial;
+  }
+
+  get modified(): boolean {
+    return this.value != this.initial;
+  }
+
+  @Watch("value")
+  onValueChanged(value: T): void {
+    this.model = value;
+  }
+
+  @Watch("model")
+  onModelChanged(value: T): void {
+    this.$emit("change", value);
+  }
+
+  handleReset(): void {
+    this.$emit("change", this.initial);
+  }
+}
 </script>

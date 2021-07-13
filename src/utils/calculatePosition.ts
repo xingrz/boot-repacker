@@ -1,9 +1,10 @@
 import numberOfPages from './numberOfPages';
+import { IImageMeta, IImagePart, IImagePartName } from './parseImage';
 
-export default function calculatePosition(part, meta) {
-  const parts = [];
+export default function calculatePosition(part: IImagePartName, meta: IImageMeta): IImagePart | null {
+  const parts: number[] = [];
 
-  function offset() {
+  function offset(): number {
     let pages = 1;
     for (const size of parts) {
       pages += numberOfPages(size, meta.page_size);
@@ -44,4 +45,6 @@ export default function calculatePosition(part, meta) {
   if (part == 'dtb') {
     return { offset: offset(), size: meta.dtb_size };
   }
+
+  return null;
 }

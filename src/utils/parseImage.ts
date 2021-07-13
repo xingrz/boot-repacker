@@ -4,10 +4,47 @@ import numberOfPages from './numberOfPages';
 
 const MAGIC = 'ANDROID!';
 
-export default function parseImage(array) {
-  let tmp;
+export interface IImagePart {
+  offset: number;
+  size: number;
+}
 
-  const meta = {};
+export type IImagePartName = 'kernel' | 'ramdisk' | 'second' | 'dt' | 'recovery_dtbo' | 'dtb';
+
+export interface IImageMeta {
+  magic: string;
+  kernel_size: number;
+  kernel_addr: number;
+  ramdisk_size: number;
+  ramdisk_addr: number;
+  second_size: number;
+  second_addr: number;
+  tags_addr: number;
+  page_size: number;
+  dt_size: number;
+  header_version: number;
+  os_patch_level: string;
+  os_version: string;
+  board: string;
+  img_id: string;
+  cmdline: string;
+  recovery_dtbo_size: number;
+  recovery_dtbo_offset: number;
+  header_size: number | null;
+  dtb_size: number;
+  dtb_addr: number;
+  kernel: IImagePart | File;
+  ramdisk: IImagePart | File;
+  second: IImagePart | File | null;
+  dt: IImagePart | File | null;
+  recovery_dtbo: IImagePart | File | null;
+  dtb: IImagePart | File | null;
+}
+
+export default function parseImage(array: ArrayBuffer): IImageMeta {
+  let tmp: number;
+
+  const meta: Record<string, null | number | string | IImagePart> = {};
   const buf = new BufferReader(array);
 
   meta.magic = buf.read(8).toString();
@@ -124,10 +161,10 @@ export default function parseImage(array) {
     meta.dtb = null;
   }
 
-  return meta;
+  return meta as unknown as IImageMeta;
 }
 
-function toString(buf) {
+function toString(buf: Buffer): string {
   for (let i = 0; i < buf.length; i++) {
     if (buf[i] == 0) {
       return buf.slice(0, i).toString();
@@ -136,6 +173,6 @@ function toString(buf) {
   return buf.toString();
 }
 
-function nextPage(offset, page_size) {
+function nextPage(offset: number, page_size: number): number {
   return page_size * numberOfPages(offset, page_size);
 }

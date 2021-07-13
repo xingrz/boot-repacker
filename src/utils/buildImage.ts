@@ -1,25 +1,24 @@
-import { Buffer } from 'buffer';
-
 import BufferWriter from './bufferWriter';
 import readImage from './readImage';
 import numberOfPages from './numberOfPages';
+import { IImageMeta, IImagePartName } from './parseImage';
 
-const PARTS = ['kernel', 'ramdisk', 'second', 'dt', 'recovery_dtbo', 'dtb'];
+const PARTS: IImagePartName[] = ['kernel', 'ramdisk', 'second', 'dt', 'recovery_dtbo', 'dtb'];
 
-export default async function buildImage(source, values) {
+export default async function buildImage(source: ArrayBuffer, values: IImageMeta): Promise<Buffer> {
   const totalSize = caclulateTotalSize(values);
   const buffer = new BufferWriter(totalSize);
 
   writeHeader(buffer, values);
 
   for (const part of PARTS) {
-    await writePart(buffer, source, values[part], values.page_size);
+    await writePart(buffer, source, values[part] as File, values.page_size);
   }
 
   return buffer.buffer;
 }
 
-function writeHeader(buffer, values) {
+function writeHeader(buffer: BufferWriter, values: IImageMeta): void {
   buffer.write(Buffer.from(values.magic));
 
   buffer.writeUInt32LE(values.kernel_size);
@@ -59,7 +58,7 @@ function writeHeader(buffer, values) {
   }
 
   if (values.header_version > 0) {
-    buffer.writeUInt32LE(values.header_size);
+    buffer.writeUInt32LE(values.header_size || 0);
   }
 
   if (values.header_version > 1) {
@@ -70,7 +69,7 @@ function writeHeader(buffer, values) {
   padFile(buffer, values.page_size);
 }
 
-async function writePart(buffer, image, part, page_size) {
+async function writePart(buffer: BufferWriter, image: ArrayBuffer, part: File | null, page_size: number): Promise<void> {
   const buf = await readImage(image, part);
   if (buf) {
     buffer.write(Buffer.from(buf));
@@ -78,13 +77,13 @@ async function writePart(buffer, image, part, page_size) {
   }
 }
 
-function padFile(buffer, page_size) {
+function padFile(buffer: BufferWriter, page_size: number): void {
   const size = buffer.tell();
   const size_paged = page_size * numberOfPages(size, page_size);
   buffer.skip(size_paged - size);
 }
 
-function calculateVersion(patch_level, version) {
+function calculateVersion(patch_level: string, version: string): number {
   let bits = 0;
 
   if (version && version.match(/^(\d+)\.(\d+)\.(\d+)$/)) {
@@ -106,10 +105,10 @@ function calculateVersion(patch_level, version) {
   return bits;
 }
 
-function caclulateTotalSize(values) {
+function caclulateTotalSize(values: IImageMeta): number {
   let pages = 1; // header
   for (const part of PARTS) {
-    pages += numberOfPages(values[`${part}_size`], values.page_size);
+    pages += numberOfPages((values as unknown as Record<string, number>)[`${part}_size`], values.page_size);
   }
   return pages * values.page_size;
 }

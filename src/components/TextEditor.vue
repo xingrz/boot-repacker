@@ -11,58 +11,58 @@
     no-resize
   >
     <template v-slot:append v-if="modified">
-      <InlineButton
-        icon="mdi-restore"
-        hint="Reset"
-        v-on:click="handleReset"
-      />
+      <InlineButton icon="mdi-restore" hint="Reset" v-on:click="handleReset" />
     </template>
   </v-textarea>
 </template>
 
-<script>
-import InlineButton from './InlineButton';
+<script lang="ts">
+import { Vue, Component, Prop, Watch } from "vue-property-decorator";
 
-export default {
-  name: 'TextEditor',
+import InlineButton from "./InlineButton.vue";
+
+@Component({
   components: {
     InlineButton,
   },
-  props: {
-    label: String,
-    initial: String,
-    value: String,
-    maxLength: Number,
-    rows: null,
-  },
-  data() {
-    return {
-      model: this.initial,
-    };
-  },
-  computed: {
-    modified() {
-      return this.value != this.initial;
-    },
-  },
-  watch: {
-    value(value) {
-      this.model = value;
-    },
-    model(value) {
-      this.$emit('change', value);
-    },
-  },
-  methods: {
-    handleReset() {
-      this.$emit('change', this.initial);
-    },
-    handleValidate(value) {
-      return typeof this.maxLength != 'number' || value.length <= this.maxLength;
-    },
-    handleBlur() {
-      this.model = this.format(this.value);
-    },
-  },
-};
+})
+export default class TextEditor extends Vue {
+  @Prop(String) label!: string;
+  @Prop(String) initial!: string;
+  @Prop(String) value!: string;
+  @Prop(Number) maxLength?: number;
+  @Prop(String) rows?: string;
+
+  model = "";
+
+  mounted(): void {
+    this.model = this.initial;
+  }
+
+  get modified(): boolean {
+    return this.value != this.initial;
+  }
+
+  @Watch("value")
+  onValueChanged(value: string): void {
+    this.model = value;
+  }
+
+  @Watch("model")
+  onModelChanged(value: string): void {
+    this.$emit("change", value);
+  }
+
+  handleReset(): void {
+    this.$emit("change", this.initial);
+  }
+
+  handleValidate(value: string): boolean {
+    return typeof this.maxLength != "number" || value.length <= this.maxLength;
+  }
+
+  handleBlur(): void {
+    this.model = this.value;
+  }
+}
 </script>

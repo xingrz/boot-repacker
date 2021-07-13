@@ -1,6 +1,5 @@
 <template>
   <v-container>
-
     <v-row>
       <v-col cols="6" lg="3">
         <ValuePresenter
@@ -69,9 +68,9 @@
           default-name="kernel.img"
           v-bind:initial="initial.kernel"
           v-bind:value="values.kernel"
-          v-on:replace="(file)=> handleReplace('kernel', file)"
-          v-on:remove="()=> handleRemove('kernel')"
-          v-on:export="()=> handleExport('kernel', 'kernel.img')"
+          v-on:replace="(file) => handleReplace('kernel', file)"
+          v-on:remove="() => handleRemove('kernel')"
+          v-on:export="() => handleExport('kernel', 'kernel.img')"
         />
       </v-col>
     </v-row>
@@ -99,9 +98,9 @@
           default-name="ramdisk.cpio.gz"
           v-bind:initial="initial.ramdisk"
           v-bind:value="values.ramdisk"
-          v-on:replace="(file)=> handleReplace('ramdisk', file)"
-          v-on:remove="()=> handleRemove('ramdisk')"
-          v-on:export="()=> handleExport('ramdisk', 'ramdisk.cpio.gz')"
+          v-on:replace="(file) => handleReplace('ramdisk', file)"
+          v-on:remove="() => handleRemove('ramdisk')"
+          v-on:export="() => handleExport('ramdisk', 'ramdisk.cpio.gz')"
         />
       </v-col>
     </v-row>
@@ -129,9 +128,9 @@
           default-name="second.img"
           v-bind:initial="initial.second"
           v-bind:value="values.second"
-          v-on:replace="(file)=> handleReplace('second', file)"
-          v-on:remove="()=> handleRemove('second')"
-          v-on:export="()=> handleExport('second', 'second.img')"
+          v-on:replace="(file) => handleReplace('second', file)"
+          v-on:remove="() => handleRemove('second')"
+          v-on:export="() => handleExport('second', 'second.img')"
         />
       </v-col>
     </v-row>
@@ -159,9 +158,9 @@
           default-name="dt.img"
           v-bind:initial="initial.dt"
           v-bind:value="values.dt"
-          v-on:replace="(file)=> handleReplace('dt', file)"
-          v-on:remove="()=> handleRemove('dt')"
-          v-on:export="()=> handleExport('dt', 'dt.img')"
+          v-on:replace="(file) => handleReplace('dt', file)"
+          v-on:remove="() => handleRemove('dt')"
+          v-on:export="() => handleExport('dt', 'dt.img')"
         />
       </v-col>
     </v-row>
@@ -187,9 +186,9 @@
           default-name="recovery_dtbo.img"
           v-bind:initial="initial.recovery_dtbo"
           v-bind:value="values.recovery_dtbo"
-          v-on:replace="(file)=> handleReplace('recovery_dtbo', file)"
-          v-on:remove="()=> handleRemove('recovery_dtbo')"
-          v-on:export="()=> handleExport('recovery_dtbo', 'recovery_dtbo.img')"
+          v-on:replace="(file) => handleReplace('recovery_dtbo', file)"
+          v-on:remove="() => handleRemove('recovery_dtbo')"
+          v-on:export="() => handleExport('recovery_dtbo', 'recovery_dtbo.img')"
         />
       </v-col>
     </v-row>
@@ -217,9 +216,9 @@
           default-name="dtb.img"
           v-bind:initial="initial.dtb"
           v-bind:value="values.dtb"
-          v-on:replace="(file)=> handleReplace('dtb', file)"
-          v-on:remove="()=> handleRemove('dtb')"
-          v-on:export="()=> handleExport('dtb', 'dtb.img')"
+          v-on:replace="(file) => handleReplace('dtb', file)"
+          v-on:remove="() => handleRemove('dtb')"
+          v-on:export="() => handleExport('dtb', 'dtb.img')"
         />
       </v-col>
     </v-row>
@@ -265,19 +264,21 @@
         />
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
-<script>
-import ValuePresenter from './ValuePresenter';
-import ValueEditor from './ValueEditor';
-import SelectEditor from './SelectEditor';
-import TextEditor from './TextEditor';
-import ImageReplacer from './ImageReplacer';
+<script lang="ts">
+import { Vue, Component, Prop } from "vue-property-decorator";
 
-export default {
-  name: 'Form',
+import ValuePresenter from "./ValuePresenter.vue";
+import ValueEditor from "./ValueEditor.vue";
+import SelectEditor from "./SelectEditor.vue";
+import TextEditor from "./TextEditor.vue";
+import ImageReplacer from "./ImageReplacer.vue";
+
+import { IImageMeta, IImagePartName } from "../utils/parseImage";
+
+@Component({
   components: {
     ValuePresenter,
     ValueEditor,
@@ -285,38 +286,39 @@ export default {
     TextEditor,
     ImageReplacer,
   },
-  props: {
-    initial: Object,
-    values: Object,
-  },
-  data() {
-    return {
-      header_versions: [
-        { value: 0, text: 'v0', size: null },
-        { value: 1, text: 'v1', size: 1648 },
-        { value: 2, text: 'v2', size: 1660 },
-      ],
-    };
-  },
-  methods: {
-    handleChange(key, value) {
-      this.$emit('change', key, value);
-      if (key == 'header_version') {
-        const { size } = this.header_versions.find(i => i.value == value);
-        this.$emit('change', 'header_size', size);
-      }
-    },
-    handleReplace(part, file) {
-      this.$emit('replace', part, file);
-    },
-    handleRemove(part) {
-      this.$emit('remove', part);
-    },
-    handleExport(part, name) {
-      this.$emit('export', part, name);
-    },
-  },
-};
+})
+export default class Form extends Vue {
+  @Prop(Object) initial!: IImageMeta;
+  @Prop(Object) values!: IImageMeta;
+
+  header_versions = [
+    { value: 0, text: "v0", size: null },
+    { value: 1, text: "v1", size: 1648 },
+    { value: 2, text: "v2", size: 1660 },
+  ];
+
+  handleChange(key: string, value: string | number): void {
+    this.$emit("change", key, value);
+    if (key == "header_version") {
+      const { size } = this.header_versions.find((i) => i.value == value) as {
+        size: number | null;
+      };
+      this.$emit("change", "header_size", size);
+    }
+  }
+
+  handleReplace(part: IImagePartName, file: File): void {
+    this.$emit("replace", part, file);
+  }
+
+  handleRemove(part: IImagePartName): void {
+    this.$emit("remove", part);
+  }
+
+  handleExport(part: IImagePartName, name: string): void {
+    this.$emit("export", part, name);
+  }
+}
 </script>
 
 <style>

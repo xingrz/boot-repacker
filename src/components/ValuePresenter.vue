@@ -9,13 +9,13 @@
   />
 </template>
 
-<script>
-export default {
-  name: 'ValuePresenter',
-  props: {
-    label: String,
-    initial: null,
-    value: null,
-  },
-};
+<script lang="ts">
+import { Vue, Component, Prop } from "vue-property-decorator";
+
+@Component
+export default class ValuePresenter<T = string | number> extends Vue {
+  @Prop(String) label!: string;
+  @Prop() initial!: T | null;
+  @Prop() value!: T | null;
+}
 </script>

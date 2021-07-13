@@ -41,55 +41,57 @@
   </v-text-field>
 </template>
 
-<script>
-import fileDialog from 'file-dialog';
+<script lang="ts">
+import { Vue, Component, Prop } from "vue-property-decorator";
 
-import InlineButton from './InlineButton';
+import fileDialog from "file-dialog";
 
-export default {
-  name: 'ImageReplacer',
+import InlineButton from "./InlineButton.vue";
+
+@Component({
   components: {
     InlineButton,
   },
-  props: {
-    label: String,
-    defaultName: String,
-    initial: null,
-    value: null,
-  },
-  computed: {
-    name() {
-      if (this.replaced) return this.value.name;
-      if (this.removed || !this.presence) return null;
-      return this.defaultName;
-    },
-    presence() {
-      return this.initial != null;
-    },
-    modified() {
-      return this.initial != this.value;
-    },
-    removed() {
-      return this.modified && this.value == null;
-    },
-    replaced() {
-      return this.modified && this.value instanceof File;
-    },
-  },
-  methods: {
-    async handleReplace() {
-      const [file] = await fileDialog();
-      this.$emit('replace', file);
-    },
-    handleRemove() {
-      this.$emit('remove');
-    },
-    handleReset() {
-      this.$emit('replace', null);
-    },
-    handleExport() {
-      this.$emit('export');
-    },
-  },
-};
+})
+export default class ImageReplacer extends Vue {
+  @Prop(String) label!: string;
+  @Prop(String) defaultName!: string;
+  @Prop() initial!: File | null;
+  @Prop() value!: File | null;
+
+  get name(): string | null {
+    if (this.modified && this.value instanceof File) return this.value.name;
+    if (this.removed || !this.presence) return null;
+    return this.defaultName;
+  }
+
+  get presence(): boolean {
+    return this.initial != null;
+  }
+
+  get modified(): boolean {
+    return this.initial != this.value;
+  }
+
+  get removed(): boolean {
+    return this.modified && this.value == null;
+  }
+
+  async handleReplace(): Promise<void> {
+    const [file] = await fileDialog();
+    this.$emit("replace", file);
+  }
+
+  handleRemove(): void {
+    this.$emit("remove");
+  }
+
+  handleReset(): void {
+    this.$emit("replace", null);
+  }
+
+  handleExport(): void {
+    this.$emit("export");
+  }
+}
 </script>
