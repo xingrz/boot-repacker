@@ -15,7 +15,7 @@
     "throttle-debounce": "^2.2.1",
     "vue": "^2.6.11",
     "vue-upload-component": "^2.8.20",
-    "vuetify": "^2.2.11"
+    "vuetify": "^2.6.10"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.13",
